@@ -1,0 +1,68 @@
+{
+  "name": "rawg-sdk",
+  "version": "1.0.0",
+  "description": "Production-grade TypeScript SDK for the RAWG Video Games Database API",
+  "license": "MIT",
+  "author": "Your Name <your.email@example.com>",
+  "homepage": "https://github.com/YOUR_USERNAME/rawg-sdk",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/rawg-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/YOUR_USERNAME/rawg-sdk/issues"
+  },
+  "keywords": [
+    "rawg",
+    "games",
+    "api",
+    "sdk",
+    "typescript",
+    "video-games",
+    "game-database",
+    "game-development"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src tests --fix",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "docs": "typedoc",
+    "prepublishOnly": "npm run typecheck && npm run build && npm run test && npm run lint"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "@vitest/coverage-v8": "^1.1.0",
+    "@vitest/ui": "^1.1.0",
+    "eslint": "^8.54.0",
+    "prettier": "^3.1.0",
+    "tsup": "^8.0.1",
+    "typedoc": "^0.25.4",
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.0"
+  }
+}
