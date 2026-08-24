@@ -1,2 +1,69 @@
-// Temporary placeholder
+// Version
 export const VERSION = '1.0.0';
+
+// Main client
+export { RAWGClient, type RAWGClientConfig } from './client';
+
+// Error classes
+export {
+  RAWGError,
+  AuthenticationError,
+  RateLimitError,
+  NotFoundError,
+  ValidationError,
+  ResponseParseError,
+  NetworkError,
+} from './errors';
+
+// Types - Common
+export type {
+  PaginationParams,
+  PaginatedResponse,
+  PlatformInfo,
+  CompanyInfo,
+  GenreInfo,
+  TagInfo,
+  StoreInfo,
+  Rating,
+  SearchQuery,
+  OrderingField,
+  DateRange,
+} from './types/common';
+
+// Types - Games
+export type {
+  Game,
+  GameDetail,
+  GameScreenshot,
+  GameTrailer,
+  GamesListParams,
+  GamesSearchParams,
+} from './types/games';
+
+// Endpoints
+export { GamesEndpoint } from './endpoints/games';
+export { PlatformsEndpoint } from './endpoints/platforms';
+export { GenresEndpoint } from './endpoints/genres';
+
+// HTTP utilities
+export { HttpClient, type HttpResponse, type HttpRequestOptions } from './utils/http';
+
+// Validation utilities
+export {
+  validateRequired,
+  validateRange,
+  validatePagination,
+  validateDateFormat,
+  validateCommaSeparatedIds,
+  validateEnum,
+} from './utils/validation';
+
+// Serialization utilities
+export {
+  serializeQueryParams,
+  normalizeOrdering,
+  formatDateRange,
+  escapeSearchQuery,
+  camelToSnakeCase,
+  buildQueryString,
+} from './utils/serialization';

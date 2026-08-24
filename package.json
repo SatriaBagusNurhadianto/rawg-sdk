@@ -42,7 +42,7 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src tests --fix",
+    "lint": "eslint src --fix",
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
