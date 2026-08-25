@@ -93,7 +93,7 @@ describe('RAWG SDK', () => {
       expect(client.genres).toBeDefined();
     });
 
-        it('should mask API key for security', () => {
+    it('should mask API key for security', () => {
       const masked = client.getApiKeyMasked();
       expect(masked).toContain('*');
       expect(masked).toMatch(/^test/);
@@ -193,6 +193,90 @@ describe('RAWG SDK', () => {
       expect(error).toBeInstanceOf(RateLimitError);
       expect(error).toBeInstanceOf(RAWGError);
       expect(error).toBeInstanceOf(Error);
+    });
+  });
+
+  describe('New Endpoints (Phase 2)', () => {
+    let client: RAWGClient;
+
+    beforeEach(() => {
+      client = new RAWGClient({ apiKey: 'test-api-key-123' });
+    });
+
+    it('should have developers endpoint', () => {
+      expect(client.developers).toBeDefined();
+    });
+
+    it('should have publishers endpoint', () => {
+      expect(client.publishers).toBeDefined();
+    });
+
+    it('should have tags endpoint', () => {
+      expect(client.tags).toBeDefined();
+    });
+
+    it('should have stores endpoint', () => {
+      expect(client.stores).toBeDefined();
+    });
+
+    it('developers endpoint should have list method', () => {
+      expect(client.developers.list).toBeDefined();
+      expect(typeof client.developers.list).toBe('function');
+    });
+
+    it('developers endpoint should have getById method', () => {
+      expect(client.developers.getById).toBeDefined();
+      expect(typeof client.developers.getById).toBe('function');
+    });
+
+    it('developers endpoint should have getBySlug method', () => {
+      expect(client.developers.getBySlug).toBeDefined();
+      expect(typeof client.developers.getBySlug).toBe('function');
+    });
+
+    it('publishers endpoint should have list method', () => {
+      expect(client.publishers.list).toBeDefined();
+      expect(typeof client.publishers.list).toBe('function');
+    });
+
+    it('publishers endpoint should have getById method', () => {
+      expect(client.publishers.getById).toBeDefined();
+      expect(typeof client.publishers.getById).toBe('function');
+    });
+
+    it('publishers endpoint should have getBySlug method', () => {
+      expect(client.publishers.getBySlug).toBeDefined();
+      expect(typeof client.publishers.getBySlug).toBe('function');
+    });
+
+    it('tags endpoint should have list method', () => {
+      expect(client.tags.list).toBeDefined();
+      expect(typeof client.tags.list).toBe('function');
+    });
+
+    it('tags endpoint should have getById method', () => {
+      expect(client.tags.getById).toBeDefined();
+      expect(typeof client.tags.getById).toBe('function');
+    });
+
+    it('tags endpoint should have getBySlug method', () => {
+      expect(client.tags.getBySlug).toBeDefined();
+      expect(typeof client.tags.getBySlug).toBe('function');
+    });
+
+    it('stores endpoint should have list method', () => {
+      expect(client.stores.list).toBeDefined();
+      expect(typeof client.stores.list).toBe('function');
+    });
+
+    it('stores endpoint should have getById method', () => {
+      expect(client.stores.getById).toBeDefined();
+      expect(typeof client.stores.getById).toBe('function');
+    });
+
+    it('stores endpoint should have getBySlug method', () => {
+      expect(client.stores.getBySlug).toBeDefined();
+      expect(typeof client.stores.getBySlug).toBe('function');
     });
   });
 });

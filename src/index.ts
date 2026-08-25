@@ -44,6 +44,10 @@ export type {
 export { GamesEndpoint } from './endpoints/games';
 export { PlatformsEndpoint } from './endpoints/platforms';
 export { GenresEndpoint } from './endpoints/genres';
+export { DevelopersEndpoint, type DeveloperDetail } from './endpoints/developers';
+export { PublishersEndpoint, type PublisherDetail } from './endpoints/publishers';
+export { TagsEndpoint, type TagDetail } from './endpoints/tags';
+export { StoresEndpoint, type StoreDetail } from './endpoints/stores';
 
 // HTTP utilities
 export { HttpClient, type HttpResponse, type HttpRequestOptions } from './utils/http';

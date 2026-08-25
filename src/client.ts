@@ -2,6 +2,10 @@ import { HttpClient } from './utils/http';
 import { GamesEndpoint } from './endpoints/games';
 import { PlatformsEndpoint } from './endpoints/platforms';
 import { GenresEndpoint } from './endpoints/genres';
+import { DevelopersEndpoint } from './endpoints/developers';
+import { PublishersEndpoint } from './endpoints/publishers';
+import { TagsEndpoint } from './endpoints/tags';
+import { StoresEndpoint } from './endpoints/stores';
 import { AuthenticationError } from './errors';
 
 /**
@@ -33,6 +37,18 @@ export class RAWGClient {
   /** Genres endpoint */
   readonly genres: GenresEndpoint;
 
+  /** Developers endpoint */
+  readonly developers: DevelopersEndpoint;
+
+  /** Publishers endpoint */
+  readonly publishers: PublishersEndpoint;
+
+  /** Tags endpoint */
+  readonly tags: TagsEndpoint;
+
+  /** Stores endpoint */
+  readonly stores: StoresEndpoint;
+
   constructor(config: RAWGClientConfig) {
     // Validate API key
     if (!config.apiKey || typeof config.apiKey !== 'string' || config.apiKey.trim() === '') {
@@ -54,6 +70,10 @@ export class RAWGClient {
     this.games = new GamesEndpoint(this.httpClient, this.apiKey);
     this.platforms = new PlatformsEndpoint(this.httpClient, this.apiKey);
     this.genres = new GenresEndpoint(this.httpClient, this.apiKey);
+    this.developers = new DevelopersEndpoint(this.httpClient, this.apiKey);
+    this.publishers = new PublishersEndpoint(this.httpClient, this.apiKey);
+    this.tags = new TagsEndpoint(this.httpClient, this.apiKey);
+    this.stores = new StoresEndpoint(this.httpClient, this.apiKey);
   }
 
   /**
