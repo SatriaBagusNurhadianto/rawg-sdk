@@ -303,4 +303,3 @@ MIT License. See [LICENSE](LICENSE) for details.
 - Discussions: https://github.com/SatriaBagusNurhadianto/rawg-sdk/discussions
 ```
 
-Copy-paste ini ke `README.md`. Confirm setelah selesai!
