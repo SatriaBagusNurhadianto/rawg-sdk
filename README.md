@@ -301,5 +301,3 @@ MIT License. See [LICENSE](LICENSE) for details.
 - API Documentation: https://rawg.io/apireference
 - Issues: https://github.com/SatriaBagusNurhadianto/rawg-sdk/issues
 - Discussions: https://github.com/SatriaBagusNurhadianto/rawg-sdk/discussions
-```
-
