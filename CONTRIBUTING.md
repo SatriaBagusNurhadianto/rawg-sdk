@@ -1,4 +1,3 @@
-\`\`\`markdown
 # Contributing to RAWG SDK
 
 We love your input! We want to make contributing to RAWG SDK as easy and transparent as possible.
