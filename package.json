@@ -3,14 +3,14 @@
   "version": "1.0.0",
   "description": "Production-grade TypeScript SDK for the RAWG Video Games Database API",
   "license": "MIT",
-  "author": "Your Name <your.email@example.com>",
-  "homepage": "https://github.com/YOUR_USERNAME/rawg-sdk",
+  "author": "Satria Bagus Nurhadianto <satria@example.com>",
+  "homepage": "https://github.com/SatriaBagusNurhadianto/rawg-sdk",
   "repository": {
     "type": "git",
-    "url": "https://github.com/YOUR_USERNAME/rawg-sdk.git"
+    "url": "https://github.com/SatriaBagusNurhadianto/rawg-sdk.git"
   },
   "bugs": {
-    "url": "https://github.com/YOUR_USERNAME/rawg-sdk/issues"
+    "url": "https://github.com/SatriaBagusNurhadianto/rawg-sdk/issues"
   },
   "keywords": [
     "rawg",
@@ -23,10 +23,12 @@
     "game-development"
   ],
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "import": "./dist/index.js"
     }
   },
   "files": [
