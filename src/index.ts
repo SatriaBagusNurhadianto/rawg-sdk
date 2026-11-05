@@ -1,5 +1,5 @@
 // Version
-export const VERSION = '1.0.0';
+export const VERSION = '1.1.0';
 
 // Main client
 export { RAWGClient, type RAWGClientConfig } from './client';
@@ -13,6 +13,7 @@ export {
   ValidationError,
   ResponseParseError,
   NetworkError,
+  ServerError,
 } from './errors';
 
 // Types - Common
@@ -62,7 +63,8 @@ export {
   validateEnum,
 } from './utils/validation';
 
-// Serialization utilities
+// Pagination utilities
+export { fetchAll, type FetchAllResult, type FetchAllOptions } from './utils/pagination';
 export {
   serializeQueryParams,
   normalizeOrdering,

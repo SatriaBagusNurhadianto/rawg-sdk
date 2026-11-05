@@ -1,6 +1,7 @@
 import { HttpClient, type HttpResponse } from '../utils/http';
 import { buildQueryString, escapeSearchQuery } from '../utils/serialization';
 import { validatePagination, validateRange } from '../utils/validation';
+import { fetchAll } from '../utils/pagination';
 import type {
   Game,
   GameDetail,
@@ -50,8 +51,24 @@ export class GamesEndpoint {
   }
 
   /**
+   * Fetch all games across pages (capped).
+   */
+  async listAll(
+    params: GamesListParams = {},
+    options: { maxPages?: number; maxItems?: number } = {},
+  ): Promise<{ items: Game[]; truncated: boolean }> {
+    return fetchAll<Game>(async (page, pageSize) => {
+      const res = await this.list({ ...params, page, pageSize });
+      return res.data.results ?? [];
+    }, {
+      maxPages: options.maxPages,
+      maxItems: options.maxItems,
+      pageSize: params.pageSize,
+    });
+  }
+
+  /**
    * Search games by name
-   * @param params - Search parameters including required 'search' field
    * @returns Paginated list of matching games
    */
   async search(
