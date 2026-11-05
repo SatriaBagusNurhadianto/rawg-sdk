@@ -96,6 +96,16 @@ export class ResponseParseError extends RAWGError {
 }
 
 /**
+ * Error thrown for server-side (5xx) errors
+ */
+export class ServerError extends RAWGError {
+  constructor(message: string = 'Server error', options?: { status?: number; code?: string; endpoint?: string }) {
+    super(message, { status: options?.status, code: options?.code ?? 'SERVER_ERROR', endpoint: options?.endpoint });
+    this.name = 'ServerError';
+    Object.setPrototypeOf(this, ServerError.prototype);
+  }
+}
+/**
  * Error thrown for network/connection issues
  */
 export class NetworkError extends RAWGError {

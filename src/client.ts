@@ -7,6 +7,7 @@ import { PublishersEndpoint } from './endpoints/publishers';
 import { TagsEndpoint } from './endpoints/tags';
 import { StoresEndpoint } from './endpoints/stores';
 import { AuthenticationError } from './errors';
+import { ValidationError } from './errors';
 
 /**
  * RAWG SDK Client Configuration
@@ -55,11 +56,22 @@ export class RAWGClient {
       throw new AuthenticationError('API key is required to initialize RAWG client');
     }
 
+    // Validate base URL
+    const resolvedBaseUrl = config.baseUrl ?? 'https://api.rawg.io/api';
+    try {
+      const parsed = new URL(resolvedBaseUrl);
+      if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+        throw new Error('invalid protocol');
+      }
+    } catch {
+      throw new ValidationError('Invalid baseUrl', { field: 'baseUrl' });
+    }
+
     this.apiKey = config.apiKey.trim();
 
     // Initialize HTTP client
     this.httpClient = new HttpClient({
-      baseUrl: config.baseUrl ?? 'https://api.rawg.io/api',
+      baseUrl: resolvedBaseUrl,
       timeout: config.timeout ?? 30000,
       headers: {
         'User-Agent': 'RAWG-SDK/1.0.0',

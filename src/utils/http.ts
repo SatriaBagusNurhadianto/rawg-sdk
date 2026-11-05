@@ -4,11 +4,9 @@ import {
   RateLimitError,
   ResponseParseError,
   NotFoundError,
+  ServerError,
 } from '../errors';
 
-/**
- * HTTP request options
- */
 export interface HttpRequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
   headers?: Record<string, string>;
@@ -17,18 +15,12 @@ export interface HttpRequestOptions {
   retry?: number;
 }
 
-/**
- * HTTP response wrapper
- */
 export interface HttpResponse<T> {
   status: number;
   headers: Record<string, string>;
   data: T;
 }
 
-/**
- * HTTP Client for making requests to RAWG API
- */
 export class HttpClient {
   private baseUrl: string;
   private defaultTimeout: number;
@@ -40,40 +32,75 @@ export class HttpClient {
     headers?: Record<string, string>;
   }) {
     this.baseUrl = options.baseUrl;
-    this.defaultTimeout = options.timeout ?? 30000; // 30 seconds
+    this.defaultTimeout = options.timeout ?? 30000;
     this.defaultHeaders = {
       'Content-Type': 'application/json',
       ...options.headers,
     };
   }
 
-  /**
-   * Make HTTP request
-   */
   async request<T = unknown>(
     endpoint: string,
     options: HttpRequestOptions = {},
   ): Promise<HttpResponse<T>> {
     const url = this.buildUrl(endpoint);
     const mergedOptions = this.mergeOptions(options);
+    const method = mergedOptions.method ?? 'GET';
+    const maxAttempts = method === 'GET' ? (mergedOptions.retry ?? 3) : 0;
 
-    try {
-      const response = await this.fetchWithTimeout(url, mergedOptions);
-      return await this.handleResponse<T>(response, endpoint);
-    } catch (error) {
-      if (error instanceof RAWGError) {
+    let lastError: unknown;
+    for (let attempt = 0; attempt <= maxAttempts; attempt++) {
+      try {
+        const response = await this.fetchWithTimeout(url, mergedOptions);
+        if (
+          method === 'GET' &&
+          attempt < maxAttempts &&
+          [429, 502, 503, 504].includes(response.status)
+        ) {
+          const retryAfter = this.parseRetryAfter(response.headers);
+          await this.sleep(retryAfter ?? this.backoff(attempt));
+          continue;
+        }
+        return await this.handleResponse<T>(response, endpoint);
+      } catch (error) {
+        if (error instanceof RAWGError) {
+          if (
+            method === 'GET' &&
+            attempt < maxAttempts &&
+            error instanceof RateLimitError
+          ) {
+            const retryAfter = Math.min(error.retryAfter ?? 1, 30) * 1000;
+            await this.sleep(retryAfter);
+            lastError = error;
+            continue;
+          }
+          if (error instanceof ServerError && method === 'GET' && attempt < maxAttempts) {
+            await this.sleep(this.backoff(attempt));
+            lastError = error;
+            continue;
+          }
+          throw error;
+        }
+        if (error instanceof TypeError) {
+          if (method === 'GET' && attempt < maxAttempts) {
+            await this.sleep(this.backoff(attempt));
+            lastError = error;
+            continue;
+          }
+          throw new NetworkError('Network request failed');
+        }
         throw error;
       }
-      if (error instanceof TypeError) {
-        throw new NetworkError(`Network request failed: ${error.message}`);
-      }
-      throw error;
     }
+    if (lastError instanceof TypeError) {
+      throw new NetworkError('Network request failed');
+    }
+    if (lastError instanceof RAWGError) {
+      throw lastError;
+    }
+    throw new NetworkError('Request failed after retries');
   }
 
-  /**
-   * Make GET request
-   */
   async get<T = unknown>(
     endpoint: string,
     options: Omit<HttpRequestOptions, 'method' | 'body'> = {},
@@ -81,9 +108,6 @@ export class HttpClient {
     return this.request<T>(endpoint, { ...options, method: 'GET' });
   }
 
-  /**
-   * Make POST request
-   */
   async post<T = unknown>(
     endpoint: string,
     body?: unknown,
@@ -92,30 +116,21 @@ export class HttpClient {
     return this.request<T>(endpoint, { ...options, method: 'POST', body });
   }
 
-  /**
-   * Build full URL from endpoint
-   */
   private buildUrl(endpoint: string): string {
     const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
     return `${this.baseUrl}${cleanEndpoint}`;
   }
 
-  /**
-   * Merge request options with defaults
-   */
   private mergeOptions(options: HttpRequestOptions): HttpRequestOptions {
     return {
       method: options.method ?? 'GET',
       headers: { ...this.defaultHeaders, ...options.headers },
       timeout: options.timeout ?? this.defaultTimeout,
-      retry: options.retry ?? 0,
+      retry: options.retry ?? 3,
       body: options.body,
     };
   }
 
-  /**
-   * Fetch with timeout
-   */
   private async fetchWithTimeout(
     url: string,
     options: HttpRequestOptions,
@@ -132,9 +147,10 @@ export class HttpClient {
       };
 
       if (options.body) {
-        fetchOptions.body = typeof options.body === 'string' 
-          ? options.body 
-          : JSON.stringify(options.body);
+        fetchOptions.body =
+          typeof options.body === 'string'
+            ? options.body
+            : JSON.stringify(options.body);
       }
 
       const response = await fetch(url, fetchOptions);
@@ -144,16 +160,12 @@ export class HttpClient {
     }
   }
 
-  /**
-   * Handle HTTP response and parse JSON
-   */
   private async handleResponse<T>(
     response: Response,
     endpoint: string,
   ): Promise<HttpResponse<T>> {
     const headers = this.parseHeaders(response.headers);
 
-    // Handle non-2xx status codes
     if (!response.ok) {
       this.handleErrorStatus(response.status, endpoint, headers);
     }
@@ -172,9 +184,6 @@ export class HttpClient {
     }
   }
 
-  /**
-   * Parse response headers
-   */
   private parseHeaders(headers: Headers): Record<string, string> {
     const result: Record<string, string> = {};
     headers.forEach((value, key) => {
@@ -183,9 +192,6 @@ export class HttpClient {
     return result;
   }
 
-  /**
-   * Handle HTTP error status codes
-   */
   private handleErrorStatus(
     status: number,
     endpoint: string,
@@ -216,17 +222,19 @@ export class HttpClient {
       case 404:
         throw new NotFoundError(`Resource not found at ${endpoint}`, endpoint);
 
-      case 429:
-        const retryAfter = headers['retry-after'] 
-          ? parseInt(headers['retry-after'], 10)
-          : undefined;
+      case 429: {
+        const raw = headers['retry-after'];
+        const parsed = raw ? parseInt(raw, 10) : undefined;
+        const retryAfter =
+          parsed && !isNaN(parsed) ? Math.min(parsed, 30) : undefined;
         throw new RateLimitError('Too many requests', { retryAfter });
+      }
 
       case 500:
       case 502:
       case 503:
       case 504:
-        throw new RAWGError('Server error', {
+        throw new ServerError(`Server error (${status})`, {
           status,
           code: 'SERVER_ERROR',
           endpoint,
@@ -239,5 +247,24 @@ export class HttpClient {
           endpoint,
         });
     }
+  }
+
+  private parseRetryAfter(headers: Headers | Record<string, string>): number | undefined {
+    const raw =
+      headers instanceof Headers
+        ? headers.get('retry-after')
+        : headers['retry-after'];
+    if (!raw) return undefined;
+    const parsed = parseInt(raw, 10);
+    if (isNaN(parsed)) return undefined;
+    return Math.min(parsed, 30) * 1000;
+  }
+
+  private backoff(attempt: number): number {
+    return Math.min(1000 * Math.pow(2, attempt), 8000);
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
